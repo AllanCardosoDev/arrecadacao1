@@ -29,7 +29,7 @@ let charts = {};
 
 async function initDashboard() {
     try {
-        const response = await fetch('arrecadacao.csv');
+        const response = await fetch('https://docs.google.com/spreadsheets/d/1oY6qsppzbLhUPrwwj9279tYsFszgBHC_/export?format=csv&gid=1088293995');
         if (!response.ok) throw new Error('Não foi possível carregar o CSV');
         const csvText = await response.text();
         
