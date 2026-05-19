@@ -97,10 +97,10 @@ function processData(data) {
 }
 
 function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026) {
-    // Set global Chart.js defaults for dark theme
-    Chart.defaults.color = '#b0bec5';
+    // Set global Chart.js defaults for light theme
+    Chart.defaults.color = '#495057';
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+    Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.08)';
 
     // 1. Gauge Chart
     const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
@@ -175,7 +175,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                     const y = Math.sin(markerAngle) * (outerRadius + 15);
                     
                     ctx.font = 'bold 10px Inter, sans-serif';
-                    ctx.fillStyle = '#fff';
+                    ctx.fillStyle = '#495057';
                     ctx.textAlign = 'center';
                     ctx.fillText(label, x, y);
                     
@@ -183,7 +183,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                     ctx.beginPath();
                     ctx.moveTo(Math.cos(markerAngle) * outerRadius, Math.sin(markerAngle) * outerRadius);
                     ctx.lineTo(Math.cos(markerAngle) * (outerRadius + 8), Math.sin(markerAngle) * (outerRadius + 8));
-                    ctx.strokeStyle = '#fff';
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
                     ctx.lineWidth = 1;
                     ctx.stroke();
                 };
@@ -193,7 +193,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 
                 // End labels
                 ctx.font = '9px Inter, sans-serif';
-                ctx.fillStyle = '#b0bec5';
+                ctx.fillStyle = '#495057';
                 ctx.textAlign = 'left';
                 ctx.fillText('R$ 0', -outerRadius - 5, 15);
                 ctx.textAlign = 'right';
@@ -237,7 +237,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 16, 21, 0.9)',
+                    backgroundColor: 'rgba(15, 16, 21, 0.95)',
                     titleColor: '#fff',
                     bodyColor: '#ffd54f',
                     callbacks: {
@@ -250,9 +250,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.06)' },
                     ticks: {
-                        color: '#b0bec5',
+                        color: '#495057',
                         callback: function(value) {
                             if (value >= 1000000) return 'R$ ' + (value / 1000000).toFixed(1) + 'M';
                             if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(0) + 'k';
@@ -262,7 +262,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#b0bec5' }
+                    ticks: { color: '#495057' }
                 }
             }
         },
@@ -279,7 +279,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         
                         const text = formatBRLNoCents(val);
                         
-                        ctx.fillStyle = '#fff';
+                        ctx.fillStyle = '#212529';
                         ctx.font = 'bold 9px Inter, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
@@ -320,7 +320,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             fill: true,
             tension: 0.4,
             pointBackgroundColor: color,
-            pointBorderColor: '#fff',
+            pointBorderColor: '#ffffff',
             pointBorderWidth: 1,
             pointRadius: 2,
             pointHoverRadius: 5
@@ -347,7 +347,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         usePointStyle: true,
                         boxWidth: 8,
                         padding: 15,
-                        color: '#fff',
+                        color: '#212529',
                         font: { size: 11, weight: '600' }
                     }
                 },
@@ -366,9 +366,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 y: {
                     stacked: true,
                     beginAtZero: true,
-                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.06)' },
                     ticks: {
-                        color: '#b0bec5',
+                        color: '#495057',
                         callback: function(value) {
                             if (value >= 1000000) return 'R$ ' + (value / 1000000).toFixed(1) + 'M';
                             if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(0) + 'k';
@@ -378,7 +378,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#b0bec5' }
+                    ticks: { color: '#495057' }
                 }
             }
         },
@@ -394,21 +394,19 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         const val = dataset.data[index];
                         if (val === null || val === undefined || val === 0) return;
                         
-                        // Only show some labels to avoid overcrowding, or match image style
-                        // The image shows labels for almost every point
                         const text = formatBRLNoCents(val);
                         
                         ctx.font = 'bold 8px Inter, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
                         
-                        // Outline
-                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-                        ctx.lineWidth = 2;
+                        // Outline for contrast on color bands
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.lineWidth = 3;
                         ctx.strokeText(text, element.x, element.y - 4);
                         
                         // Fill text
-                        ctx.fillStyle = '#ffffff';
+                        ctx.fillStyle = '#212529';
                         ctx.fillText(text, element.x, element.y - 4);
                     });
                 });

@@ -1,13 +1,13 @@
 :root {
-    --bg-color: #0f1015;
-    --card-bg: #1e2028;
-    --card-border: rgba(255, 255, 255, 0.05);
-    --primary-red: #e74c3c;
-    --dark-red: #c0392b;
-    --text-main: #ffffff;
-    --text-muted: #b0bec5;
-    --accent-gold: #ffd54f;
-    --header-red: #d32f2f;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --card-border: rgba(0, 0, 0, 0.08);
+    --primary-red: #d32f2f;
+    --dark-red: #b71c1c;
+    --text-main: #212529;
+    --text-muted: #495057;
+    --accent-gold: #d97706;
+    --header-gradient: linear-gradient(135deg, #b71c1c, #e53935);
 }
 
 * {
@@ -169,11 +169,11 @@ body {
     font-weight: 800;
     padding: 12px;
     color: var(--text-main);
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .kpi-value.highlight {
-    color: #fff;
+    color: var(--primary-red);
 }
 
 /* Table Styles */
@@ -215,7 +215,7 @@ body {
 
 .data-table td {
     padding: 10px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     text-align: right;
 }
 
@@ -224,7 +224,7 @@ body {
 }
 
 .data-table tr:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .year-cell {
@@ -247,7 +247,7 @@ body {
 }
 
 .value-cell.empty {
-    color: rgba(255, 255, 255, 0.15);
+    color: rgba(0, 0, 0, 0.25);
     text-align: center;
 }
 
