@@ -1,12 +1,13 @@
 :root {
-    --bg-color: #f8f9fa;
-    --card-bg: #ffffff;
-    --card-border: rgba(0, 0, 0, 0.08);
+    --bg-color: #eed7c5; /* Warm flesh/skin tone matching the reference image */
+    --card-bg: #fcf6f0; /* Creamy warm card background */
+    --card-border: rgba(139, 90, 76, 0.15); /* Soft warm border */
     --primary-red: #d32f2f;
     --dark-red: #b71c1c;
-    --text-main: #212529;
-    --text-muted: #495057;
-    --accent-gold: #d97706;
+    --header-red: #d32f2f; /* Red background for headers */
+    --text-main: #33221b; /* Dark warm brown-gray for high contrast readability */
+    --text-muted: #665248; /* Warm gray for secondary text */
+    --accent-gold: #c26400; /* Darker warm gold for contrast on cream backgrounds */
     --header-gradient: linear-gradient(135deg, #b71c1c, #e53935);
 }
 
