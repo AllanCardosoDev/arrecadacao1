@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Arrecadação - CBMAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>CORPO DE BOMBEIROS MILITAR DO AMAZONAS – CBMAM</h1>
+        <h2>PAINEL DE GERENCIAMENTO DE PROJETOS E MODERNIZAÇÃO DO CBMAM</h2>
+        <h3>ARRECADAÇÃO</h3>
+    </header>
+
+    <main class="dashboard">
+        <section class="top-row">
+            <div class="card gauge-card">
+                <div class="card-header">META DE ARRECADAÇÃO 2026</div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="gaugeChart"></canvas>
+                    </div>
+                    <div class="gauge-labels">
+                        <div class="gauge-value" id="gaugeValue">R$ 0,00</div>
+                        <div class="gauge-target">Meta: R$ 3.000.000,00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bar-card">
+                <div class="card-header">ARRECADAÇÃO POR ANO</div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card kpi-card">
+                <div class="kpi-box">
+                    <div class="card-header">ARRECADAÇÃO HISTÓRICA</div>
+                    <div class="kpi-value" id="kpiHistorico">Carregando...</div>
+                </div>
+                <div class="kpi-box meta-box">
+                    <div class="card-header">META ARRECADAÇÃO 2026</div>
+                    <div class="kpi-value">R$ 3.000.000,00</div>
+                </div>
+                <div class="kpi-box">
+                    <div class="card-header">ARRECADAÇÃO 2026</div>
+                    <div class="kpi-value highlight" id="kpi2026">Carregando...</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bottom-row">
+            <div class="card area-card">
+                <div class="card-header">HISTÓRICO DE ARRECADAÇÃO MENSAL</div>
+                <div class="card-content">
+                    <div class="chart-container-large">
+                        <canvas id="areaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
