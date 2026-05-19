@@ -15,6 +15,15 @@ function formatBRL(value) {
     }).format(value);
 }
 
+function formatBRLNoCents(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(value);
+}
+
 // Global charts instances to allow updating if necessary
 let charts = {};
 
@@ -84,6 +93,7 @@ function processData(data) {
     document.getElementById('gaugeValue').innerText = formatBRL(total2026);
 
     renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026);
+    renderTable(anos, meses, areaChartData);
 }
 
 function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026) {
@@ -95,50 +105,117 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
     // 1. Gauge Chart
     const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
     
-    // Create gradient for gauge progress
-    let gaugeGradient = ctxGauge.createLinearGradient(0, 0, 300, 0);
-    gaugeGradient.addColorStop(0, '#ffd54f'); // Gold
-    gaugeGradient.addColorStop(1, '#4caf50'); // Green
-
     const percentComplete = Math.min((total2026 / meta2026) * 100, 100);
-    const remaining = Math.max(0, meta2026 - total2026);
-
+    
     charts.gauge = new Chart(ctxGauge, {
         type: 'doughnut',
         data: {
-            labels: ['Arrecadado', 'Falta'],
             datasets: [{
-                data: [total2026, remaining],
-                backgroundColor: [gaugeGradient, 'rgba(255, 255, 255, 0.1)'],
+                data: [60, 20, 20], // Background segments for colors
+                backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71'],
                 borderWidth: 0,
-                cutout: '80%',
+                cutout: '75%',
                 circumference: 180,
                 rotation: -90,
-                borderRadius: 5
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { bottom: 20 } },
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.label + ': ' + formatBRL(context.raw);
-                        }
-                    }
-                }
+                tooltip: { enabled: false }
             }
-        }
+        },
+        plugins: [{
+            id: 'gaugeNeedle',
+            afterDatasetsDraw(chart) {
+                const { ctx, data, chartArea: { width, height } } = chart;
+                ctx.save();
+                
+                const centerX = width / 2;
+                const centerY = chart.getDatasetMeta(0).data[0].y;
+                const innerRadius = chart.getDatasetMeta(0).data[0].innerRadius;
+                const outerRadius = chart.getDatasetMeta(0).data[0].outerRadius;
+                const radius = (innerRadius + outerRadius) / 2;
+
+                // 1. Draw Needle
+                const angle = Math.PI + (percentComplete / 100) * Math.PI;
+                
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle);
+                
+                // Needle line
+                ctx.beginPath();
+                ctx.moveTo(0, -5);
+                ctx.lineTo(innerRadius - 10, 0);
+                ctx.lineTo(0, 5);
+                ctx.fillStyle = '#3498db'; // Blue needle matching image
+                ctx.fill();
+                
+                // Center dot
+                ctx.beginPath();
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#3498db';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.restore();
+
+                // 2. Draw Markers and Labels
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                
+                const drawMarker = (percent, label) => {
+                    const markerAngle = Math.PI + (percent / 100) * Math.PI;
+                    const x = Math.cos(markerAngle) * (outerRadius + 15);
+                    const y = Math.sin(markerAngle) * (outerRadius + 15);
+                    
+                    ctx.font = 'bold 10px Inter, sans-serif';
+                    ctx.fillStyle = '#fff';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(label, x, y);
+                    
+                    // Small line
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(markerAngle) * outerRadius, Math.sin(markerAngle) * outerRadius);
+                    ctx.lineTo(Math.cos(markerAngle) * (outerRadius + 8), Math.sin(markerAngle) * (outerRadius + 8));
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                };
+
+                drawMarker(60, '60%');
+                drawMarker(80, '80%');
+                
+                // End labels
+                ctx.font = '9px Inter, sans-serif';
+                ctx.fillStyle = '#b0bec5';
+                ctx.textAlign = 'left';
+                ctx.fillText('R$ 0', -outerRadius - 5, 15);
+                ctx.textAlign = 'right';
+                ctx.fillText('R$ ' + (meta2026/1000000).toFixed(3) + 'M', outerRadius + 5, 15);
+                
+                ctx.restore();
+            }
+        }]
     });
 
     // 2. Bar Chart
     const ctxBar = document.getElementById('barChart').getContext('2d');
     
-    let barGradient = ctxBar.createLinearGradient(0, 0, 0, 300);
-    barGradient.addColorStop(0, '#e53935'); // Bright red
-    barGradient.addColorStop(1, '#1e2028'); // Fade to background
+    // Bar colors based on image
+    const barColors = anos.map(ano => {
+        if (ano === '2016') return '#e74c3c'; // Red
+        if (ano === '2017') return '#34495e'; // Dark Blue
+        if (['2018', '2019', '2020'].includes(ano)) return '#3498db'; // Blue
+        if (['2021', '2022'].includes(ano)) return '#1abc9c'; // Cyan
+        if (['2023', '2024'].includes(ano)) return '#2ecc71'; // Green
+        return '#e74c3c'; // 2025, 2026: Red
+    });
 
     const barData = anos.map(ano => arrecadacaoPorAno[ano]);
     
@@ -149,11 +226,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             datasets: [{
                 label: 'Arrecadação',
                 data: barData,
-                backgroundColor: barGradient,
-                borderColor: '#e53935',
-                borderWidth: { top: 2, right: 0, bottom: 0, left: 0 },
-                borderRadius: { topLeft: 6, topRight: 6 },
-                barPercentage: 0.6
+                backgroundColor: barColors,
+                borderRadius: 4,
+                barPercentage: 0.7
             }]
         },
         options: {
@@ -175,7 +250,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             scales: {
                 y: {
                     beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
                     ticks: {
+                        color: '#b0bec5',
                         callback: function(value) {
                             if (value >= 1000000) return 'R$ ' + (value / 1000000).toFixed(1) + 'M';
                             if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(0) + 'k';
@@ -184,20 +261,52 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                     }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: { color: '#b0bec5' }
                 }
             }
-        }
+        },
+        plugins: [{
+            id: 'bar_datalabels',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                ctx.save();
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach((element, index) => {
+                        const val = dataset.data[index];
+                        if (!val) return;
+                        
+                        const text = formatBRLNoCents(val);
+                        
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 9px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(text, element.x, element.y - 5);
+                    });
+                });
+                ctx.restore();
+            }
+        }]
     });
 
     // 3. Area Chart
     const ctxArea = document.getElementById('areaChart').getContext('2d');
     
-    // Distinct colors for each year
+    // Distinct colors for each year matching the image legend as closely as possible
     const areaColors = [
-        '#00bcd4', '#4caf50', '#ff9800', '#9c27b0', 
-        '#f44336', '#3f51b5', '#e91e63', '#8bc34a', 
-        '#ffeb3b', '#009688', '#ff5722', '#795548'
+        '#3498db', // 2016: Light Blue
+        '#34495e', // 2017: Dark Blue/Gray
+        '#e67e22', // 2018: Orange
+        '#e91e63', // 2019: Pink
+        '#9b59b6', // 2020: Purple
+        '#673ab7', // 2021: Deep Purple
+        '#f1c40f', // 2022: Yellow
+        '#e74c3c', // 2023: Red
+        '#27ae60', // 2024: Green
+        '#2ecc71', // 2025: Light Green
+        '#1abc9c'  // 2026: Cyan
     ];
 
     const datasets = anos.map((ano, index) => {
@@ -206,16 +315,15 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             label: ano,
             data: areaChartData[ano],
             borderColor: color,
-            backgroundColor: color + '22', // Very transparent fill
-            borderWidth: 2,
+            backgroundColor: color + '99', // Higher opacity for stacked effect
+            borderWidth: 1,
             fill: true,
-            tension: 0.4, // Smooth curve
-            pointBackgroundColor: '#0f1015',
-            pointBorderColor: color,
-            pointBorderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            pointHoverBackgroundColor: color
+            tension: 0.4,
+            pointBackgroundColor: color,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 1,
+            pointRadius: 2,
+            pointHoverRadius: 5
         };
     });
 
@@ -239,7 +347,8 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         usePointStyle: true,
                         boxWidth: 8,
                         padding: 15,
-                        font: { size: 11 }
+                        color: '#fff',
+                        font: { size: 11, weight: '600' }
                     }
                 },
                 tooltip: {
@@ -255,9 +364,11 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             },
             scales: {
                 y: {
-                    stacked: true, // Stacked to reproduce the overlapping mountain effect
+                    stacked: true,
                     beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
                     ticks: {
+                        color: '#b0bec5',
                         callback: function(value) {
                             if (value >= 1000000) return 'R$ ' + (value / 1000000).toFixed(1) + 'M';
                             if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(0) + 'k';
@@ -266,11 +377,98 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                     }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: { color: '#b0bec5' }
                 }
             }
-        }
+        },
+        plugins: [{
+            id: 'area_datalabels',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                ctx.save();
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (meta.hidden) return;
+                    meta.data.forEach((element, index) => {
+                        const val = dataset.data[index];
+                        if (val === null || val === undefined || val === 0) return;
+                        
+                        // Only show some labels to avoid overcrowding, or match image style
+                        // The image shows labels for almost every point
+                        const text = formatBRLNoCents(val);
+                        
+                        ctx.font = 'bold 8px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        
+                        // Outline
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeText(text, element.x, element.y - 4);
+                        
+                        // Fill text
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(text, element.x, element.y - 4);
+                    });
+                });
+                ctx.restore();
+            }
+        }]
     });
+}
+
+function renderTable(anos, meses, areaChartData) {
+    const thead = document.querySelector('#arrecadacaoTable thead');
+    const tbody = document.querySelector('#arrecadacaoTable tbody');
+    
+    if (!thead || !tbody) return;
+
+    // Create table header
+    let headerHtml = '<tr><th>ANO</th>';
+    meses.forEach(mes => {
+        headerHtml += `<th>${mes}</th>`;
+    });
+    headerHtml += '<th>TOTAL</th></tr>';
+    thead.innerHTML = headerHtml;
+
+    const areaColors = [
+        '#3498db', '#34495e', '#e67e22', '#e91e63', 
+        '#9b59b6', '#673ab7', '#f1c40f', '#e74c3c', 
+        '#27ae60', '#2ecc71', '#1abc9c'
+    ];
+
+    // Create table rows (descending order of years)
+    let bodyHtml = '';
+    const sortedAnosDesc = [...anos].reverse();
+    
+    sortedAnosDesc.forEach(ano => {
+        const index = anos.indexOf(ano);
+        const color = areaColors[index % areaColors.length];
+        
+        let rowHtml = `<tr>
+            <td class="year-cell">
+                <span class="year-color-indicator" style="background-color: ${color};"></span>
+                <strong>${ano}</strong>
+            </td>`;
+        
+        let yearTotal = 0;
+        
+        meses.forEach((mes, mIndex) => {
+            const val = areaChartData[ano][mIndex];
+            if (val !== null && val !== undefined) {
+                yearTotal += val;
+                rowHtml += `<td class="value-cell" data-label="${mes}">${formatBRL(val)}</td>`;
+            } else {
+                rowHtml += `<td class="value-cell empty" data-label="${mes}">-</td>`;
+            }
+        });
+        
+        rowHtml += `<td class="total-cell"><strong>${formatBRL(yearTotal)}</strong></td></tr>`;
+        bodyHtml += rowHtml;
+    });
+    
+    tbody.innerHTML = bodyHtml;
 }
 
 document.addEventListener('DOMContentLoaded', initDashboard);

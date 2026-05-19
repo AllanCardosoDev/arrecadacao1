@@ -47,7 +47,7 @@
                     <div class="card-header">ARRECADAÇÃO HISTÓRICA</div>
                     <div class="kpi-value" id="kpiHistorico">Carregando...</div>
                 </div>
-                <div class="kpi-box meta-box">
+                <div class="kpi-box">
                     <div class="card-header">META ARRECADAÇÃO 2026</div>
                     <div class="kpi-value">R$ 3.000.000,00</div>
                 </div>
@@ -60,11 +60,21 @@
 
         <section class="bottom-row">
             <div class="card area-card">
-                <div class="card-header">HISTÓRICO DE ARRECADAÇÃO MENSAL</div>
+                <div class="card-header">HISTÓRICO DE ARRECADAÇÃO</div>
                 <div class="card-content">
                     <div class="chart-container-large">
                         <canvas id="areaChart"></canvas>
                     </div>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="card-header">Valores de Arrecadação Mensal por Ano</div>
+                <div class="card-content table-container-wrapper">
+                    <table class="data-table" id="arrecadacaoTable">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </section>
