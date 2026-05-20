@@ -133,8 +133,8 @@ function processData(data) {
 
     // Update the DOM KPIs
     document.getElementById('kpiHistorico').innerText = formatBRL(totalHistorico);
-    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #e74c3c;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #10b981; margin-top: 4px;">+ ${formatBRL(total2026Projected)} (Proj.)</span></div>`;
-    document.getElementById('gaugeValue').innerHTML = `<div style="color: #e74c3c; line-height: 1;">${formatBRL(total2026Actual)}</div><div style="font-size: 0.85rem; color: #10b981; font-weight: 600; margin-top: 5px;">+ ${formatBRL(total2026Projected)} Projetado</div>`;
+    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #3498db; font-weight: 600;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #10b981; margin-top: 4px;">+ ${formatBRL(total2026Projected)} (Proj.)</span></div>`;
+    document.getElementById('gaugeValue').innerHTML = `<div style="color: #3498db; line-height: 1; font-weight: 600;">${formatBRL(total2026Actual)}</div><div style="font-size: 0.85rem; color: #10b981; font-weight: 600; margin-top: 5px;">+ ${formatBRL(total2026Projected)} Projetado</div>`;
 
     renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026, total2026Actual, total2026Projected);
     renderTable(anos, meses, areaChartData);
@@ -145,6 +145,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
     Chart.defaults.color = '#665248';
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
     Chart.defaults.borderColor = 'rgba(139, 90, 76, 0.15)';
+
+    const masterColors = ['#34495e', '#9b59b6', '#e67e22', '#e91e63', '#673ab7', '#f1c40f', '#e74c3c', '#27ae60', '#d35400', '#2ecc71', '#3498db'];
+    const getColor = (index) => masterColors[index % masterColors.length];
 
     // 1. Gauge Chart
     const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
@@ -158,7 +161,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
         data: {
             datasets: [{
                 data: [percentCompleteActual, percentCompleteProj, percentRemaining], 
-                backgroundColor: ['#e74c3c', '#10b981', '#f1c40f'], // Red Actual, Green Proj, Yellow Remaining
+                backgroundColor: ['#3498db', '#10b981', '#f1c40f'], // Blue Actual, Green Proj, Yellow Remaining
                 borderWidth: 0,
                 cutout: '75%',
                 circumference: 180,
@@ -254,15 +257,8 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
     // 2. Bar Chart
     const ctxBar = document.getElementById('barChart').getContext('2d');
     
-    // Bar colors based on image
-    const barColorsActual = anos.map(ano => {
-        if (ano === '2016') return '#e74c3c'; // Red
-        if (ano === '2017') return '#34495e'; // Dark Blue
-        if (['2018', '2019', '2020'].includes(ano)) return '#3498db'; // Blue
-        if (['2021', '2022'].includes(ano)) return '#1abc9c'; // Cyan
-        if (['2023', '2024'].includes(ano)) return '#2ecc71'; // Green
-        return '#e74c3c'; // 2025, 2026: Red
-    });
+    // Bar colors based on global index
+    const barColorsActual = anos.map((ano, index) => getColor(index));
 
     const barDataActual = anos.map(ano => ano === '2026' ? total2026Actual : arrecadacaoPorAno[ano]);
     const barDataProjected = anos.map(ano => ano === '2026' ? total2026Projected : 0);
@@ -354,23 +350,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
     // 3. Area Chart
     const ctxArea = document.getElementById('areaChart').getContext('2d');
     
-    // Distinct colors for each year matching the image legend as closely as possible
-    const areaColors = [
-        '#3498db', // 2016: Light Blue
-        '#34495e', // 2017: Dark Blue/Gray
-        '#e67e22', // 2018: Orange
-        '#e91e63', // 2019: Pink
-        '#9b59b6', // 2020: Purple
-        '#673ab7', // 2021: Deep Purple
-        '#f1c40f', // 2022: Yellow
-        '#e74c3c', // 2023: Red
-        '#27ae60', // 2024: Green
-        '#2ecc71', // 2025: Light Green
-        '#1abc9c'  // 2026: Cyan
-    ];
-
+    // Distinct colors synced with masterColors
     const datasets = anos.map((ano, index) => {
-        const color = areaColors[index % areaColors.length];
+        const color = getColor(index);
         return {
             label: ano,
             data: areaChartData[ano],
@@ -493,11 +475,8 @@ function renderTable(anos, meses, areaChartData) {
     headerHtml += '<th>TOTAL</th></tr>';
     thead.innerHTML = headerHtml;
 
-    const areaColors = [
-        '#3498db', '#34495e', '#e67e22', '#e91e63', 
-        '#9b59b6', '#673ab7', '#f1c40f', '#e74c3c', 
-        '#27ae60', '#2ecc71', '#1abc9c'
-    ];
+    const masterColors = ['#34495e', '#9b59b6', '#e67e22', '#e91e63', '#673ab7', '#f1c40f', '#e74c3c', '#27ae60', '#d35400', '#2ecc71', '#3498db'];
+    const getColor = (index) => masterColors[index % masterColors.length];
 
     // Create table rows (descending order of years)
     let bodyHtml = '';
@@ -505,7 +484,7 @@ function renderTable(anos, meses, areaChartData) {
     
     sortedAnosDesc.forEach(ano => {
         const index = anos.indexOf(ano);
-        const color = areaColors[index % areaColors.length];
+        const color = getColor(index);
         
         let rowHtml = `<tr>
             <td class="year-cell">
