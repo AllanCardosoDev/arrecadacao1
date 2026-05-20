@@ -133,7 +133,7 @@ function processData(data) {
 
     // Update the DOM KPIs
     document.getElementById('kpiHistorico').innerText = formatBRL(totalHistorico);
-    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #3498db; font-weight: 600;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #e74c3c; margin-top: 4px;">+ ${formatBRL(total2026Projected)} (Proj.)</span></div>`;
+    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #3498db; font-weight: 600;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #e74c3c; margin-top: 4px;">+ ${formatBRL(total2026Projected)} Projetado</span></div>`;
     document.getElementById('gaugeValue').innerHTML = `<div style="color: #3498db; line-height: 1; font-weight: 600;">${formatBRL(total2026Actual)}</div><div style="font-size: 0.85rem; color: #e74c3c; font-weight: 600; margin-top: 5px;">+ ${formatBRL(total2026Projected)} Projetado</div>`;
 
     renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026, total2026Actual, total2026Projected);
