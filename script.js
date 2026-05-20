@@ -82,21 +82,65 @@ function processData(data) {
 
     anos.sort(); // Sort years ascending
 
-    // The current/target year based on the image is 2026
+    // Projection for missing months of 2026 using YTD Seasonal Ratio
+    // This compares the year-to-date performance of 2026 against 2025
+    // and applies that ratio to the remaining months of 2025 to project 2026.
+    const targetYear = '2026';
+    const previousYear = '2025';
+    
+    let total2026Actual = arrecadacaoPorAno[targetYear] || 0;
+    let total2026Projected = 0;
+    
+    if (areaChartData[targetYear] && areaChartData[previousYear]) {
+        let ytdTarget = 0;
+        let ytdPrevious = 0;
+        let lastActualMonthIndex = -1;
+
+        // Find YTD sums
+        for (let i = 0; i < 12; i++) {
+            if (areaChartData[targetYear][i] !== null && areaChartData[targetYear][i] !== undefined && areaChartData[targetYear][i] > 0) {
+                ytdTarget += areaChartData[targetYear][i];
+                ytdPrevious += areaChartData[previousYear][i] || 0;
+                lastActualMonthIndex = i;
+            }
+        }
+
+        // Calculate ratio
+        const trendRatio = (ytdPrevious > 0) ? (ytdTarget / ytdPrevious) : 1;
+
+        if (!areaChartData[targetYear + '_projected']) {
+            areaChartData[targetYear + '_projected'] = new Array(12).fill(false);
+        }
+
+        // Project remaining months
+        for (let i = lastActualMonthIndex + 1; i < 12; i++) {
+            if (!areaChartData[targetYear][i]) {
+                const baseValue = areaChartData[previousYear][i] || 0;
+                const predictedVal = baseValue * trendRatio;
+                
+                areaChartData[targetYear][i] = predictedVal;
+                areaChartData[targetYear + '_projected'][i] = true;
+                arrecadacaoPorAno[targetYear] = (arrecadacaoPorAno[targetYear] || 0) + predictedVal;
+                totalHistorico += predictedVal;
+                total2026Projected += predictedVal;
+            }
+        }
+    }
+
     const currentYear = '2026';
     const total2026 = arrecadacaoPorAno[currentYear] || 0;
     const meta2026 = 3000000;
 
     // Update the DOM KPIs
     document.getElementById('kpiHistorico').innerText = formatBRL(totalHistorico);
-    document.getElementById('kpi2026').innerText = formatBRL(total2026);
-    document.getElementById('gaugeValue').innerText = formatBRL(total2026);
+    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #e74c3c;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #10b981; margin-top: 4px;">+ ${formatBRL(total2026Projected)} (Proj.)</span></div>`;
+    document.getElementById('gaugeValue').innerHTML = `<div style="color: #e74c3c; line-height: 1;">${formatBRL(total2026Actual)}</div><div style="font-size: 0.85rem; color: #10b981; font-weight: 600; margin-top: 5px;">+ ${formatBRL(total2026Projected)} Projetado</div>`;
 
-    renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026);
+    renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026, total2026Actual, total2026Projected);
     renderTable(anos, meses, areaChartData);
 }
 
-function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026) {
+function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026, total2026Actual, total2026Projected) {
     // Set global Chart.js defaults for warm skin theme
     Chart.defaults.color = '#665248';
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
@@ -105,14 +149,16 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
     // 1. Gauge Chart
     const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
     
-    const percentComplete = Math.min((total2026 / meta2026) * 100, 100);
+    const percentCompleteActual = Math.min((total2026Actual / meta2026) * 100, 100);
+    const percentCompleteProj = Math.min((total2026Projected / meta2026) * 100, 100);
+    const percentRemaining = Math.max(100 - percentCompleteActual - percentCompleteProj, 0);
     
     charts.gauge = new Chart(ctxGauge, {
         type: 'doughnut',
         data: {
             datasets: [{
-                data: [60, 20, 20], // Background segments for colors
-                backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71'],
+                data: [percentCompleteActual, percentCompleteProj, percentRemaining], 
+                backgroundColor: ['#e74c3c', '#10b981', '#f1c40f'], // Red Actual, Green Proj, Yellow Remaining
                 borderWidth: 0,
                 cutout: '75%',
                 circumference: 180,
@@ -140,8 +186,9 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 const outerRadius = chart.getDatasetMeta(0).data[0].outerRadius;
                 const radius = (innerRadius + outerRadius) / 2;
 
-                // 1. Draw Needle
-                const angle = Math.PI + (percentComplete / 100) * Math.PI;
+                // 1. Draw Needle (pointing to the actual value)
+                const percentActual = Math.min((total2026Actual / meta2026) * 100, 100);
+                const angle = Math.PI + (percentActual / 100) * Math.PI;
                 
                 ctx.translate(centerX, centerY);
                 ctx.rotate(angle);
@@ -208,7 +255,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
     const ctxBar = document.getElementById('barChart').getContext('2d');
     
     // Bar colors based on image
-    const barColors = anos.map(ano => {
+    const barColorsActual = anos.map(ano => {
         if (ano === '2016') return '#e74c3c'; // Red
         if (ano === '2017') return '#34495e'; // Dark Blue
         if (['2018', '2019', '2020'].includes(ano)) return '#3498db'; // Blue
@@ -217,19 +264,29 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
         return '#e74c3c'; // 2025, 2026: Red
     });
 
-    const barData = anos.map(ano => arrecadacaoPorAno[ano]);
+    const barDataActual = anos.map(ano => ano === '2026' ? total2026Actual : arrecadacaoPorAno[ano]);
+    const barDataProjected = anos.map(ano => ano === '2026' ? total2026Projected : 0);
     
     charts.bar = new Chart(ctxBar, {
         type: 'bar',
         data: {
             labels: anos,
-            datasets: [{
-                label: 'Arrecadação',
-                data: barData,
-                backgroundColor: barColors,
-                borderRadius: 4,
-                barPercentage: 0.7
-            }]
+            datasets: [
+                {
+                    label: 'Arrecadação Atual',
+                    data: barDataActual,
+                    backgroundColor: barColorsActual,
+                    borderRadius: 4,
+                    barPercentage: 0.7
+                },
+                {
+                    label: 'Projeção',
+                    data: barDataProjected,
+                    backgroundColor: '#10b981', // Vibrant Green for projection
+                    borderRadius: 4,
+                    barPercentage: 0.7
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -249,6 +306,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
             },
             scales: {
                 y: {
+                    stacked: true,
                     beginAtZero: true,
                     grid: { color: 'rgba(139, 90, 76, 0.12)' },
                     ticks: {
@@ -261,6 +319,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                     }
                 },
                 x: {
+                    stacked: true,
                     grid: { display: false },
                     ticks: { color: '#665248' }
                 }
@@ -274,12 +333,13 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 chart.data.datasets.forEach((dataset, datasetIndex) => {
                     const meta = chart.getDatasetMeta(datasetIndex);
                     meta.data.forEach((element, index) => {
-                        const val = dataset.data[index];
-                        if (!val) return;
+                        // Only show label on the top dataset or total
+                        if (datasetIndex === 0 && barDataProjected[index] > 0) return; // Skip actual if there is a projection on top
                         
-                        const text = formatBRLNoCents(val);
+                        const totalVal = barDataActual[index] + barDataProjected[index];
+                        const text = formatBRLNoCents(totalVal);
                         
-                        ctx.fillStyle = '#33221b';
+                        ctx.fillStyle = barDataProjected[index] > 0 ? '#10b981' : '#33221b';
                         ctx.font = 'bold 9px Inter, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
@@ -405,8 +465,11 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         ctx.lineWidth = 3;
                         ctx.strokeText(text, element.x, element.y - 4);
                         
-                        // Fill text
-                        ctx.fillStyle = '#33221b';
+                        if (dataset.label === '2026' && areaChartData['2026_projected'] && areaChartData['2026_projected'][index]) {
+                            ctx.fillStyle = '#10b981'; // Vibrant Green for projected
+                        } else {
+                            ctx.fillStyle = '#33221b';
+                        }
                         ctx.fillText(text, element.x, element.y - 4);
                     });
                 });
@@ -454,9 +517,13 @@ function renderTable(anos, meses, areaChartData) {
         
         meses.forEach((mes, mIndex) => {
             const val = areaChartData[ano][mIndex];
+            const isProjected = areaChartData[ano + '_projected'] && areaChartData[ano + '_projected'][mIndex];
+            
             if (val !== null && val !== undefined) {
                 yearTotal += val;
-                rowHtml += `<td class="value-cell" data-label="${mes}">${formatBRL(val)}</td>`;
+                const cssClass = isProjected ? "value-cell projected-val" : "value-cell";
+                const displayVal = formatBRL(val);
+                rowHtml += `<td class="${cssClass}" data-label="${mes}">${displayVal}</td>`;
             } else {
                 rowHtml += `<td class="value-cell empty" data-label="${mes}">-</td>`;
             }
