@@ -129,12 +129,12 @@ function processData(data) {
 
     const currentYear = '2026';
     const total2026 = arrecadacaoPorAno[currentYear] || 0;
-    const meta2026 = 3000000;
+    const meta2026 = 2300000;
 
     // Update the DOM KPIs
     document.getElementById('kpiHistorico').innerText = formatBRL(totalHistorico);
-    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #3498db; font-weight: 600;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #10b981; margin-top: 4px;">+ ${formatBRL(total2026Projected)} (Proj.)</span></div>`;
-    document.getElementById('gaugeValue').innerHTML = `<div style="color: #3498db; line-height: 1; font-weight: 600;">${formatBRL(total2026Actual)}</div><div style="font-size: 0.85rem; color: #10b981; font-weight: 600; margin-top: 5px;">+ ${formatBRL(total2026Projected)} Projetado</div>`;
+    document.getElementById('kpi2026').innerHTML = `<div style="display: flex; flex-direction: column; text-align: center; line-height: 1.2;"><span style="color: #3498db; font-weight: 600;">${formatBRL(total2026Actual)}</span><span style="font-size: 0.9rem; color: #e74c3c; margin-top: 4px;">+ ${formatBRL(total2026Projected)} (Proj.)</span></div>`;
+    document.getElementById('gaugeValue').innerHTML = `<div style="color: #3498db; line-height: 1; font-weight: 600;">${formatBRL(total2026Actual)}</div><div style="font-size: 0.85rem; color: #e74c3c; font-weight: 600; margin-top: 5px;">+ ${formatBRL(total2026Projected)} Projetado</div>`;
 
     renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, meta2026, total2026Actual, total2026Projected);
     renderTable(anos, meses, areaChartData);
@@ -161,7 +161,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
         data: {
             datasets: [{
                 data: [percentCompleteActual, percentCompleteProj, percentRemaining], 
-                backgroundColor: ['#3498db', '#10b981', '#f1c40f'], // Blue Actual, Green Proj, Yellow Remaining
+                backgroundColor: ['#3498db', '#e74c3c', '#f1c40f'], // Blue Actual, Red Proj, Yellow Remaining
                 borderWidth: 0,
                 cutout: '75%',
                 circumference: 180,
@@ -278,7 +278,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                 {
                     label: 'Projeção',
                     data: barDataProjected,
-                    backgroundColor: '#10b981', // Vibrant Green for projection
+                    backgroundColor: '#e74c3c', // Red for projection
                     borderRadius: 4,
                     barPercentage: 0.7
                 }
@@ -335,7 +335,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         const totalVal = barDataActual[index] + barDataProjected[index];
                         const text = formatBRLNoCents(totalVal);
                         
-                        ctx.fillStyle = barDataProjected[index] > 0 ? '#10b981' : '#33221b';
+                        ctx.fillStyle = barDataProjected[index] > 0 ? '#e74c3c' : '#33221b';
                         ctx.font = 'bold 9px Inter, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
@@ -448,7 +448,7 @@ function renderCharts(anos, arrecadacaoPorAno, meses, areaChartData, total2026, 
                         ctx.strokeText(text, element.x, element.y - 4);
                         
                         if (dataset.label === '2026' && areaChartData['2026_projected'] && areaChartData['2026_projected'][index]) {
-                            ctx.fillStyle = '#10b981'; // Vibrant Green for projected
+                            ctx.fillStyle = '#e74c3c'; // Red for projected
                         } else {
                             ctx.fillStyle = '#33221b';
                         }
